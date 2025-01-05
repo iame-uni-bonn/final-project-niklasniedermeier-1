@@ -1,1 +1,2 @@
-# Tool for the application of alogrithmic trading strategies 
+# Tool for the application of algorithmic trading strategies
+
