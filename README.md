@@ -1,2 +1,1 @@
-# Tool for the application of algorithmic trading strategies
-
+# Evaluation of Trading Strategies
