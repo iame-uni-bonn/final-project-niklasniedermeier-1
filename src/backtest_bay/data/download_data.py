@@ -22,11 +22,14 @@ def _validate_symbol(symbol):
     is_symbol_string = isinstance(symbol, str)
     if not is_symbol_string:
         error_msg = "Symbol must be a non-empty string."
-        raise ValueError(error_msg)
+        raise TypeError(error_msg)
 
     is_symbol_existent = not yf.Ticker(symbol).history(period="1d").empty
     if not is_symbol_existent:
-        error_msg = f"Invalid symbol: '{symbol}'. Please provide a valid ticker symbol."
+        error_msg = (
+            f"Invalid symbol: '{symbol}'. Please provide a valid ticker symbol "
+            "from https://finance.yahoo.com/"
+        )
         raise ValueError(error_msg)
 
 
@@ -52,6 +55,9 @@ def _validate_interval(interval):
 
 
 def _validate_date_format(date_str):
+    if not isinstance(date_str, str):
+        error_msg = "Date must be a string in 'YYYY-MM-DD' format."
+        raise TypeError(error_msg)
     try:
         datetime.fromisoformat(date_str)
     except ValueError as e:
