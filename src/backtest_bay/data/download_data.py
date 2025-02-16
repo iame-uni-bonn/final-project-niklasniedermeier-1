@@ -73,6 +73,8 @@ def _validate_date_range(start_date, end_date):
 
 def _validate_output(data, symbol, start_date, end_date, interval):
     if data.empty:
+        # Since we already checked for a valid symbol, we check if input dates
+        # fit to historic available data.
         ticker = yf.Ticker(symbol)
         hist = ticker.history(period="max")
         min_date = hist.index.min().strftime("%Y-%m-%d")

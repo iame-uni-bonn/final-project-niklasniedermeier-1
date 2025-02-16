@@ -1,8 +1,11 @@
+import pandas as pd
 import pytest
 
 from backtest_bay.data.download_data import (
     _validate_date_format,
+    _validate_date_range,
     _validate_interval,
+    _validate_output,
     _validate_symbol,
 )
 
@@ -92,3 +95,59 @@ def test_validate_date_format_non_string():
     match = "Date must be a string in 'YYYY-MM-DD' format."
     with pytest.raises(TypeError, match=match):
         _validate_date_format(12345)
+
+
+# tests for _validate_date_range
+
+
+def test_valid_date_range():
+    _validate_date_range("2024-01-01", "2024-12-31")
+
+
+def test_invalid_date_range():
+    with pytest.raises(ValueError, match="Start date must be before end date."):
+        _validate_date_range("2024-12-31", "2024-01-01")
+
+
+# tests for _validate_output
+
+
+def test_validate_output_valid_input():
+    # generate typical Yahoo Finance output format
+    symbol = "AAPL"
+    arrays = [
+        ["Close", "High", "Low", "Open", "Volume"],
+        [symbol, symbol, symbol, symbol, symbol],
+    ]
+    index = pd.MultiIndex.from_tuples(
+        list(zip(*arrays, strict=False)), names=["Price", "Ticker"]
+    )
+
+    data = pd.DataFrame(
+        [[1, 10, 1, 4, 500], [2, 8, 2, 4, 500], [2, 4, 2, 5, 400], [3, 6, 2, 4, 200]],
+        index=pd.to_datetime(["2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05"]),
+        columns=index,
+    )
+    data.index.name = "Date"
+
+    _validate_output(data, symbol, "2024-01-02", "2024-01-05", "1d")
+
+
+def test_validate_output_empty_input():
+    # generate typical Yahoo Finance output format
+    symbol = "AAPL"
+    arrays = [
+        ["Close", "High", "Low", "Open", "Volume"],
+        [symbol, symbol, symbol, symbol, symbol],
+    ]
+    index = pd.MultiIndex.from_tuples(
+        list(zip(*arrays, strict=False)), names=["Price", "Ticker"]
+    )
+
+    empty_data = pd.DataFrame(columns=index)
+
+    empty_data.index.name = "Date"
+
+    match = "No data found for AAPL between 1800-01-01 and 1800-05-01."
+    with pytest.raises(ValueError, match=match):
+        _validate_output(empty_data, symbol, "1800-01-01", "1800-05-01", "1d")
