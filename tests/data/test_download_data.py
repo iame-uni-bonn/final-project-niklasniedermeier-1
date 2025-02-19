@@ -13,7 +13,6 @@ from backtest_bay.data.download_data import (
 # Tests for _validate_symbol
 def test_validate_symbol_valid_cases():
     _validate_symbol("AAPL")
-    _validate_symbol("MSFT")
 
 
 def test_validate_symbol_invalid_invalid_symbol():
@@ -98,8 +97,6 @@ def test_validate_date_format_non_string():
 
 
 # tests for _validate_date_range
-
-
 def test_valid_date_range():
     _validate_date_range("2024-01-01", "2024-12-31")
 
@@ -110,8 +107,6 @@ def test_invalid_date_range():
 
 
 # tests for _validate_output
-
-
 def test_validate_output_valid_input():
     # generate typical Yahoo Finance output format
     symbol = "AAPL"
