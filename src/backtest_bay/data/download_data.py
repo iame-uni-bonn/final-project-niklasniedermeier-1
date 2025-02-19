@@ -24,14 +24,6 @@ def _validate_symbol(symbol):
         error_msg = "Symbol must be a non-empty string."
         raise TypeError(error_msg)
 
-    is_symbol_existent = not yf.Ticker(symbol).history(period="1d").empty
-    if not is_symbol_existent:
-        error_msg = (
-            f"Invalid symbol: '{symbol}'. Please provide a valid ticker symbol "
-            "from https://finance.yahoo.com/"
-        )
-        raise ValueError(error_msg)
-
 
 def _validate_interval(interval):
     valid_intervals = {
@@ -73,16 +65,8 @@ def _validate_date_range(start_date, end_date):
 
 def _validate_output(data, symbol, start_date, end_date, interval):
     if data.empty:
-        # Since we already checked for a valid symbol, we check if input dates
-        # fit to historic available data.
-        ticker = yf.Ticker(symbol)
-        hist = ticker.history(period="max")
-        min_date = hist.index.min().strftime("%Y-%m-%d")
-        max_date = hist.index.max().strftime("%Y-%m-%d")
-
         error_msg = (
             f"No data found for {symbol} between {start_date} and {end_date} "
-            f"with interval '{interval}'.\n"
-            f"Available data range for {symbol}: {min_date} to {max_date}."
+            f"with interval '{interval}'."
         )
         raise ValueError(error_msg)

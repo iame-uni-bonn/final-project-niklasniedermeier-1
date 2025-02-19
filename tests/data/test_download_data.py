@@ -11,20 +11,6 @@ from backtest_bay.data.download_data import (
 
 
 # Tests for _validate_symbol
-def test_validate_symbol_valid_cases():
-    _validate_symbol("AAPL")
-
-
-def test_validate_symbol_invalid_invalid_symbol():
-    with pytest.raises(ValueError, match="Invalid symbol: 'INVALID'"):
-        _validate_symbol("INVALID")
-
-
-def test_validate_symbol_invalid_empty_string():
-    with pytest.raises(ValueError, match="Invalid symbol: ''"):
-        _validate_symbol("")
-
-
 def test_validate_symbol_invalid_non_string():
     with pytest.raises(TypeError, match="Symbol must be a non-empty string."):
         _validate_symbol(123)
@@ -131,18 +117,13 @@ def test_validate_output_valid_input():
 def test_validate_output_empty_input():
     # generate typical Yahoo Finance output format
     symbol = "AAPL"
-    arrays = [
-        ["Close", "High", "Low", "Open", "Volume"],
-        [symbol, symbol, symbol, symbol, symbol],
-    ]
-    index = pd.MultiIndex.from_tuples(
-        list(zip(*arrays, strict=False)), names=["Price", "Ticker"]
+    empty_data = pd.DataFrame()
+    start_date = "1800-01-01"
+    end_date = "1800-05-01"
+    interval = "1d"
+    match = (
+        f"No data found for {symbol} between {start_date} and {end_date} "
+        f"with interval '{interval}'."
     )
-
-    empty_data = pd.DataFrame(columns=index)
-
-    empty_data.index.name = "Date"
-
-    match = "No data found for AAPL between 1800-01-01 and 1800-05-01."
     with pytest.raises(ValueError, match=match):
         _validate_output(empty_data, symbol, "1800-01-01", "1800-05-01", "1d")
