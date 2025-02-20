@@ -1,5 +1,6 @@
 import pandas as pd
 import pandas.testing as pdt
+import pytest
 
 from backtest_bay.backtest.backtest_signals import (
     _execute_buy,
@@ -7,8 +8,73 @@ from backtest_bay.backtest.backtest_signals import (
     _is_buy_trade_affordable,
     _is_sell_trade_affordable,
     _update_portfolio,
+    _validate_data,
+    _validate_initial_cash,
+    _validate_tac,
+    _validate_trade_pct,
     backtest_signals,
 )
+
+
+# tests for backtest_signals
+def test_backtest_portfolio_correct_calculation():
+    """Test backtest_portfolio for correct calculation."""
+    index = pd.date_range("2023-01-01", periods=5, freq="D")
+    data = pd.DataFrame({"Close": [10, 5, 10, 8, 10]}, index=index)
+
+    # Only hold
+    signals = pd.Series([0, 0, 0, 0, 0])
+    portfolio = backtest_signals(
+        data, signals, initial_cash=100, tac=0, trade_pct=1.0, price_col="Close"
+    )
+    expected_portfolio = pd.DataFrame(
+        data={
+            "price": [10, 5, 10, 8, 10],
+            "signal": [0, 0, 0, 0, 0],
+            "shares": [0, 0, 0, 0, 0],
+            "holdings": [0, 0, 0, 0, 0],
+            "cash": [100, 100, 100, 100, 100],
+            "assets": [100, 100, 100, 100, 100],
+        },
+        index=index,
+    )
+    pdt.assert_frame_equal(portfolio, expected_portfolio)
+
+    # Buy once
+    signals = pd.Series([0, 2, 0, 0, 0])
+    portfolio = backtest_signals(
+        data, signals, initial_cash=100, tac=0, trade_pct=1.0, price_col="Close"
+    )
+    expected_portfolio = pd.DataFrame(
+        data={
+            "price": [10, 5, 10, 8, 10],
+            "signal": [0, 2, 0, 0, 0],
+            "shares": [0, 20, 20, 20, 20],
+            "holdings": [0, 100, 200, 160, 200],
+            "cash": [100, 0, 0, 0, 0],
+            "assets": [100, 100, 200, 160, 200],
+        },
+        index=index,
+    )
+    pdt.assert_frame_equal(portfolio, expected_portfolio)
+
+    # Buy and sell once
+    signals = pd.Series([0, 2, 0, 0, 1])
+    portfolio = backtest_signals(
+        data, signals, initial_cash=100, tac=0, trade_pct=1.0, price_col="Close"
+    )
+    expected_portfolio = pd.DataFrame(
+        data={
+            "price": [10, 5, 10, 8, 10],
+            "signal": [0, 2, 0, 0, 1],
+            "shares": [0, 20, 20, 20, 4],
+            "holdings": [0, 100, 200, 160, 40],
+            "cash": [100, 0, 0, 0, 160],
+            "assets": [100, 100, 200, 160, 200],
+        },
+        index=index,
+    )
+    pdt.assert_frame_equal(portfolio, expected_portfolio)
 
 
 # tests for _is_buy_affordable
@@ -91,62 +157,124 @@ def test_update_portfolio_correct_calculation():
     assert holdings == expected_holdings
 
 
-# tests for backtest_signals
-def test_backtest_portfolio_correct_calculation():
-    """Test backtest_portfolio for correct calculation."""
-    index = pd.date_range("2023-01-01", periods=5, freq="D")
-    data = pd.DataFrame({"Close": [10, 5, 10, 8, 10]}, index=index)
+# Tests for _validate_data
+@pytest.mark.parametrize(
+    ("data", "price_col"),
+    [
+        (pd.DataFrame({"Close": [100, 101, 102]}), "Close"),
+        (pd.DataFrame({"Open": [99, 100, 101], "Close": [100, 101, 102]}), "Close"),
+        (pd.DataFrame({"Close": [100.5, 101.2, 102.1, 103.8]}), "Close"),
+    ],
+)
+def test_validate_data_valid_input(data, price_col):
+    """Test valid data input for _validate_data."""
+    _validate_data(data, price_col)
 
-    # Only hold
-    signals = pd.Series([0, 0, 0, 0, 0])
-    portfolio = backtest_signals(
-        data, signals, initial_cash=100, tac=0, trade_pct=1.0, price_col="Close"
-    )
-    expected_portfolio = pd.DataFrame(
-        data={
-            "price": [10, 5, 10, 8, 10],
-            "signal": [0, 0, 0, 0, 0],
-            "shares": [0, 0, 0, 0, 0],
-            "holdings": [0, 0, 0, 0, 0],
-            "cash": [100, 100, 100, 100, 100],
-            "assets": [100, 100, 100, 100, 100],
-        },
-        index=index,
-    )
-    pdt.assert_frame_equal(portfolio, expected_portfolio)
 
-    # Buy once
-    signals = pd.Series([0, 2, 0, 0, 0])
-    portfolio = backtest_signals(
-        data, signals, initial_cash=100, tac=0, trade_pct=1.0, price_col="Close"
-    )
-    expected_portfolio = pd.DataFrame(
-        data={
-            "price": [10, 5, 10, 8, 10],
-            "signal": [0, 2, 0, 0, 0],
-            "shares": [0, 20, 20, 20, 20],
-            "holdings": [0, 100, 200, 160, 200],
-            "cash": [100, 0, 0, 0, 0],
-            "assets": [100, 100, 200, 160, 200],
-        },
-        index=index,
-    )
-    pdt.assert_frame_equal(portfolio, expected_portfolio)
+@pytest.mark.parametrize(
+    ("data", "price_col", "expected_error"),
+    [
+        ([100, 101], "Close", "data must be a pandas DataFrame, got list."),
+        ({"Close": [100, 101]}, "Close", "data must be a pandas DataFrame, got dict."),
+    ],
+)
+def test_validate_data_invalid_type(data, price_col, expected_error):
+    """Test invalid data types for _validate_data."""
+    with pytest.raises(TypeError, match=expected_error):
+        _validate_data(data, price_col)
 
-    # Buy and sell once
-    signals = pd.Series([0, 2, 0, 0, 1])
-    portfolio = backtest_signals(
-        data, signals, initial_cash=100, tac=0, trade_pct=1.0, price_col="Close"
-    )
-    expected_portfolio = pd.DataFrame(
-        data={
-            "price": [10, 5, 10, 8, 10],
-            "signal": [0, 2, 0, 0, 1],
-            "shares": [0, 20, 20, 20, 4],
-            "holdings": [0, 100, 200, 160, 40],
-            "cash": [100, 0, 0, 0, 160],
-            "assets": [100, 100, 200, 160, 200],
-        },
-        index=index,
-    )
-    pdt.assert_frame_equal(portfolio, expected_portfolio)
+
+@pytest.mark.parametrize(
+    ("data", "price_col", "expected_error"),
+    [
+        (pd.DataFrame({"Open": [100]}), "Close", "data must contain a 'Close' column."),
+        (pd.DataFrame({"Close": [100]}), "Open", "data must contain a 'Open' column."),
+    ],
+)
+def test_validate_data_missing_price_column(data, price_col, expected_error):
+    """Test missing price column for _validate_data."""
+    with pytest.raises(ValueError, match=expected_error):
+        _validate_data(data, price_col)
+
+
+@pytest.mark.parametrize(
+    ("data", "price_col", "expected_error"),
+    [
+        (
+            pd.DataFrame({"Close": ["100", 100]}),
+            "Close",
+            "The 'Close' column must contain numeric values.",
+        ),
+        (
+            pd.DataFrame({"Close": ["a", "b", "c", "d"]}),
+            "Close",
+            "The 'Close' column must contain numeric values.",
+        ),
+    ],
+)
+def test_validate_data_non_numeric_price_column(data, price_col, expected_error):
+    """Test non-numeric price column for _validate_data."""
+    with pytest.raises(ValueError, match=expected_error):
+        _validate_data(data, price_col)
+
+
+# Tests for _validate_initial_cash
+@pytest.mark.parametrize("initial_cash", [1000, 1000.50, 0.01])
+def test_validate_initial_cash_valid_input(initial_cash):
+    """Test valid initial_cash values."""
+    _validate_initial_cash(initial_cash)
+
+
+@pytest.mark.parametrize(
+    ("initial_cash", "expected_error"),
+    [
+        (0, "initial_cash must be a positive number."),  # Zero value
+        ("1000", "initial_cash must be a number, got str."),  # String
+    ],
+)
+def test_validate_initial_cash_invalid_input(initial_cash, expected_error):
+    """Test invalid initial_cash values."""
+    with pytest.raises((TypeError, ValueError), match=expected_error):
+        _validate_initial_cash(initial_cash)
+
+
+# Tests for _validate_tac
+@pytest.mark.parametrize("tac", [0, 0.05, 1])
+def test_validate_tac_valid_input(tac):
+    """Test valid tac values."""
+    _validate_tac(tac)
+
+
+@pytest.mark.parametrize(
+    ("tac", "expected_error"),
+    [
+        (-0.01, "tac must be between 0 and 1."),
+        (1.2, "tac must be between 0 and 1."),
+        ("0.05", "tac must be a number, got str."),
+    ],
+)
+def test_validate_tac_invalid_input(tac, expected_error):
+    """Test invalid tac values."""
+    with pytest.raises((TypeError, ValueError), match=expected_error):
+        _validate_tac(tac)
+
+
+# Tests for _validate_trade_pct
+@pytest.mark.parametrize("trade_pct", [0.01, 0.5, 1.0])
+def test_validate_trade_pct_valid_input(trade_pct):
+    """Test valid trade_pct values."""
+    _validate_trade_pct(trade_pct)
+
+
+@pytest.mark.parametrize(
+    ("trade_pct", "expected_error"),
+    [
+        (0.0, "trade_pct must be between 0 and 1. Zero is not possible."),
+        (-1.0, "trade_pct must be between 0 and 1. Zero is not possible."),
+        (1, "trade_pct must be a float, got int."),
+    ],
+)
+def test_validate_trade_pct_invalid_input(trade_pct, expected_error):
+    """Test invalid trade_pct values."""
+    with pytest.raises((TypeError, ValueError), match=expected_error):
+        _validate_trade_pct(trade_pct)

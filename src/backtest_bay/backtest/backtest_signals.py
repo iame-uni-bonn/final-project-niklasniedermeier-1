@@ -28,9 +28,7 @@ def backtest_signals(data, signals, initial_cash, tac, trade_pct, price_col="Clo
             - 'cash': Cash.
             - 'assets': Portfolio value (cash + holdings).
     """
-    _validate_backtest_signals_input(
-        data, signals, initial_cash, tac, trade_pct, price_col
-    )
+    _validate_backtest_signals_input(data, initial_cash, tac, trade_pct, price_col)
 
     prices = data[price_col].squeeze()
     cash, holdings, shares = initial_cash, 0.0, 0
@@ -159,12 +157,11 @@ def _update_portfolio(cash, shares, price):
     return assets, holdings
 
 
-def _validate_backtest_signals_input(
-    data, signals, initial_cash, tac, trade_pct, price_col
-):
+def _validate_backtest_signals_input(data, initial_cash, tac, trade_pct, price_col):
     """Validates input for backtesting signals."""
+    # Since the variable 'signals' is generated using 'generate_signals', we already
+    # validated the input in the corresponding test script of 'generate_signals'.
     _validate_data(data, price_col)
-    _validate_signals(signals, data, price_col)
     _validate_initial_cash(initial_cash)
     _validate_tac(tac)
     _validate_trade_pct(trade_pct)
@@ -191,36 +188,6 @@ def _validate_data(data, price_col):
 
     if not pd.api.types.is_numeric_dtype(data[price_col].squeeze()):
         error_msg = f"The '{price_col}' column must contain numeric values."
-        raise ValueError(error_msg)
-
-
-def _validate_signals(signals, data, price_col):
-    """Validate the trading signals.
-
-    Args:
-        signals (pd.Series): Trading signals for backtesting.
-        data (pd.DataFrame): DataFrame containing stock data.
-        price_col (str): Column name for the stock price.
-
-    Raises:
-        TypeError: If signals is not a pandas Series.
-        ValueError: If signals contain invalid values.
-        ValueError: If signals do not match the length of the price column.
-    """
-    if not isinstance(signals, pd.Series):
-        error_msg = f"signals must be a pandas Series, got {type(signals).__name__}."
-        raise TypeError(error_msg)
-
-    if not all(isinstance(signal, int) for signal in signals):
-        error_msg = "signals must contain only integers."
-        raise ValueError(error_msg)
-
-    if not all(signal in [0, 1, 2] for signal in signals):
-        error_msg = "signals must contain only 0 (Hold), 1 (Sell), or 2 (Buy)."
-        raise ValueError(error_msg)
-
-    if len(signals) != len(data[price_col]):
-        error_msg = f"signals must have the same length as the '{price_col}' column."
         raise ValueError(error_msg)
 
 
