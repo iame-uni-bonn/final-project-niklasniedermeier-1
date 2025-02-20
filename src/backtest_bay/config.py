@@ -12,7 +12,7 @@ BLD = ROOT.joinpath("bld").resolve()
 
 # Configure input data
 STOCKS = ["AAPL", "MSFT"]
-START_DATES = ["2022-01-01"]
+START_DATES = ["2019-01-01"]
 END_DATES = ["2025-01-01"]
 INTERVALS = ["1d"]
 STRATEGIES = ["bollinger", "macd", "roc", "rsi"]

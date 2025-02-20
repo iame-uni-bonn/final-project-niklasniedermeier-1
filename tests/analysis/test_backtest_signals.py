@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import pandas.testing as pdt
 
@@ -99,7 +98,7 @@ def test_backtest_portfolio_correct_calculation():
     data = pd.DataFrame({"Close": [10, 5, 10, 8, 10]}, index=index)
 
     # Only hold
-    signals = np.array([0, 0, 0, 0, 0])
+    signals = pd.Series([0, 0, 0, 0, 0])
     portfolio = backtest_signals(
         data, signals, initial_cash=100, tac=0, trade_pct=1.0, price_col="Close"
     )
@@ -117,7 +116,7 @@ def test_backtest_portfolio_correct_calculation():
     pdt.assert_frame_equal(portfolio, expected_portfolio)
 
     # Buy once
-    signals = np.array([0, 2, 0, 0, 0])
+    signals = pd.Series([0, 2, 0, 0, 0])
     portfolio = backtest_signals(
         data, signals, initial_cash=100, tac=0, trade_pct=1.0, price_col="Close"
     )
@@ -135,7 +134,7 @@ def test_backtest_portfolio_correct_calculation():
     pdt.assert_frame_equal(portfolio, expected_portfolio)
 
     # Buy and sell once
-    signals = np.array([0, 2, 0, 0, 1])
+    signals = pd.Series([0, 2, 0, 0, 1])
     portfolio = backtest_signals(
         data, signals, initial_cash=100, tac=0, trade_pct=1.0, price_col="Close"
     )

@@ -8,8 +8,22 @@ def generate_signals(data, method, **kwargs):
         data (pd.DataFrame): DataFrame containing asset price data
             (must include 'Close' column).
         method (str): The signal generation method. Currently supported:
-             - 'bollinger_bands': Uses Bollinger Bands for signal generation.
+             - 'bollinger'
+             - 'macd'
+             - 'roc'
+             - 'rsi'
         **kwargs: Additional parameters specific to the chosen method.
+            - 'bollinger':
+                - window (int): Window size for moving average.
+                - num_std_dev (float, int): Standard deviation multiplier for bands.
+            - 'macd':
+                - short_window (int): Window size for the fast EMA.
+                - long_window (int): Window size for the slow EMA.
+                - signal_window (int): Window size for the signal line EMA.
+            - 'roc':
+                - window (int): Window size for calculating the rate of change.
+            - 'rsi':
+                - window (int): Window size for calculating RSI.
 
     Returns:
         pd.Series: Trading signals (2: buy, 1: sell, 0: do nothing).
