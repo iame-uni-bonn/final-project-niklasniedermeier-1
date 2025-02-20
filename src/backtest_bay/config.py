@@ -15,7 +15,7 @@ STOCKS = ["AAPL", "MSFT"]
 START_DATES = ["2022-01-01"]
 END_DATES = ["2025-01-01"]
 INTERVALS = ["1d"]
-STRATEGIES = ["flip", "bollinger"]
+STRATEGIES = ["bollinger", "macd", "roc", "rsi"]
 
 INITIAL_CASH = 1000
 TAC = 0.05
