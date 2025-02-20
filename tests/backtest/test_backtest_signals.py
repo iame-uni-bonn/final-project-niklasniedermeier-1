@@ -1,7 +1,7 @@
 import pandas as pd
 import pandas.testing as pdt
 
-from backtest_bay.analysis.backtest_signals import (
+from backtest_bay.backtest.backtest_signals import (
     _execute_buy,
     _execute_sell,
     _is_buy_trade_affordable,

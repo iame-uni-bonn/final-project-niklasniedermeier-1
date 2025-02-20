@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from backtest_bay.analysis.generate_signals import (
+from backtest_bay.backtest.generate_signals import (
     _bollinger_signals,
     _macd_signals,
     _roc_signals,

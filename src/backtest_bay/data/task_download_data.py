@@ -15,11 +15,11 @@ for row in data_to_download.itertuples(index=False):
     produces = BLD / f"{id_download}.pkl"
 
     @pytask.task(id=id_download)
-    def task_download_data(depends_on=scripts, produces=produces, row=row):
+    def task_download_data(depends_on=scripts, produces=produces, param=row):
         data = download_data(
-            symbol=row.stock,
-            start_date=row.start_date,
-            end_date=row.end_date,
-            interval=row.interval,
+            symbol=param.stock,
+            start_date=param.start_date,
+            end_date=param.end_date,
+            interval=param.interval,
         )
         data.to_pickle(produces)
