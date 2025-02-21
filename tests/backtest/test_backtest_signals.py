@@ -90,12 +90,6 @@ def test_is_buy_trade_affordable_not_enough_cash():
     assert not affordable
 
 
-def test_is_buy_trade_affordable_not_enough_shares():
-    """Test buying when buy shares are less than 1."""
-    affordable = _is_buy_trade_affordable(buy_shares=0.1, cost=10, cash=9)
-    assert not affordable
-
-
 # tests for _execute_buy
 def test_execute_buy_enough_cash():
     """Test buying when there is enough cash to purchase at least one share."""

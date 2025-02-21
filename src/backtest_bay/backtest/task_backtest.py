@@ -15,9 +15,10 @@ for row in PARAMS.itertuples(index=False):
     id_backtest = (
         f"{row.stock}_{row.start_date}_{row.end_date}_" f"{row.interval}_{row.strategy}"
     )
-
-    data_path = BLD / f"{row.stock}_{row.start_date}_{row.end_date}_{row.interval}.pkl"
-    produces = BLD / f"{id_backtest}.pkl"
+    data_path = (
+        BLD / "data" / f"{row.stock}_{row.start_date}_{row.end_date}_{row.interval}.pkl"
+    )
+    produces = BLD / "backtest" / f"{id_backtest}.pkl"
     strategy = row.strategy
 
     @pytask.task(id=id_backtest)

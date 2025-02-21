@@ -12,7 +12,7 @@ data_to_download = PARAMS.drop_duplicates(
 for row in data_to_download.itertuples(index=False):
     id_download = f"{row.stock}_{row.start_date}_{row.end_date}_{row.interval}"
 
-    produces = BLD / f"{id_download}.pkl"
+    produces = BLD / "data" / f"{id_download}.pkl"
 
     @pytask.task(id=id_download)
     def task_download_data(depends_on=scripts, produces=produces, param=row):
