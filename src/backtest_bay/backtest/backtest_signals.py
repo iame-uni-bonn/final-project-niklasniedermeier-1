@@ -28,6 +28,8 @@ def backtest_signals(data, signals, initial_cash, tac, trade_pct, price_col="Clo
             - 'cash': Cash.
             - 'assets': Portfolio value (cash + holdings).
     """
+    # Note that the inputs 'data' and 'signals' are already validated in
+    # 'download_data.py' and 'generate_signals.py'
     _validate_backtest_signals_input(data, initial_cash, tac, trade_pct, price_col)
 
     prices = data[price_col].squeeze()
@@ -159,36 +161,10 @@ def _update_portfolio(cash, shares, price):
 
 def _validate_backtest_signals_input(data, initial_cash, tac, trade_pct, price_col):
     """Validates input for backtesting signals."""
-    # Since the variable 'signals' is generated using 'generate_signals', we already
-    # validated the input in the corresponding test script of 'generate_signals'.
-    _validate_data(data, price_col)
     _validate_initial_cash(initial_cash)
     _validate_tac(tac)
     _validate_trade_pct(trade_pct)
-
-
-def _validate_data(data, price_col):
-    """Validate the input data for backtesting.
-
-    Args:
-        data (pd.DataFrame): DataFrame containing stock data.
-        price_col (str): Column name for the stock price.
-
-    Raises:
-        TypeError: If data is not a pandas DataFrame.
-        ValueError: If the price column is missing or contains non-numeric values.
-    """
-    if not isinstance(data, pd.DataFrame):
-        error_msg = f"data must be a pandas DataFrame, got {type(data).__name__}."
-        raise TypeError(error_msg)
-
-    if price_col not in data.columns:
-        error_msg = f"data must contain a '{price_col}' column."
-        raise ValueError(error_msg)
-
-    if not pd.api.types.is_numeric_dtype(data[price_col].squeeze()):
-        error_msg = f"The '{price_col}' column must contain numeric values."
-        raise ValueError(error_msg)
+    _validate_price_col(data, price_col)
 
 
 def _validate_initial_cash(initial_cash):
@@ -244,4 +220,19 @@ def _validate_trade_pct(trade_pct):
 
     if not (0 < trade_pct <= 1):
         error_msg = "trade_pct must be between 0 and 1. Zero is not possible."
+        raise ValueError(error_msg)
+
+
+def _validate_price_col(data, price_col):
+    """Validate the input price_col for backtesting.
+
+    Args:
+        data (pd.DataFrame): DataFrame containing stock data.
+        price_col (str): Column name for the stock price.
+
+    Raises:
+        ValueError: If the price column is missing.
+    """
+    if price_col not in data.columns:
+        error_msg = f"data must contain a '{price_col}' column."
         raise ValueError(error_msg)

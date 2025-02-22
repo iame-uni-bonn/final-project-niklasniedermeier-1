@@ -2,10 +2,14 @@ import pandas as pd
 import pytest
 
 from backtest_bay.data.download_data import (
+    _validate_data_empty,
+    _validate_data_index_datetime,
+    _validate_data_multiindex,
+    _validate_data_numeric,
+    _validate_data_type_dataframe,
     _validate_date_format,
     _validate_date_range,
     _validate_interval,
-    _validate_output,
     _validate_symbol,
 )
 
@@ -92,38 +96,157 @@ def test_invalid_date_range():
         _validate_date_range("2024-12-31", "2024-01-01")
 
 
-# tests for _validate_output
-def test_validate_output_valid_input():
-    # generate typical Yahoo Finance output format
-    symbol = "AAPL"
-    arrays = [
-        ["Close", "High", "Low", "Open", "Volume"],
-        [symbol, symbol, symbol, symbol, symbol],
-    ]
-    index = pd.MultiIndex.from_tuples(
-        list(zip(*arrays, strict=False)), names=["Price", "Ticker"]
-    )
-
-    data = pd.DataFrame(
-        [[1, 10, 1, 4, 500], [2, 8, 2, 4, 500], [2, 4, 2, 5, 400], [3, 6, 2, 4, 200]],
-        index=pd.to_datetime(["2024-01-02", "2024-01-03", "2024-01-04", "2024-01-05"]),
-        columns=index,
-    )
-    data.index.name = "Date"
-
-    _validate_output(data, symbol, "2024-01-02", "2024-01-05", "1d")
+# Test for _validate_data_type_dataframe
+@pytest.mark.parametrize(
+    "data",
+    [
+        pd.DataFrame({"Close": [100, 101], "Open": [99, 100]}),
+        pd.DataFrame({"A": [], "B": []}),
+    ],
+)
+def test_validate_data_type_dataframe_valid(data):
+    """Test _validate_data_type_dataframe with valid DataFrame inputs."""
+    _validate_data_type_dataframe(data)
 
 
-def test_validate_output_empty_input():
-    # generate typical Yahoo Finance output format
-    symbol = "AAPL"
-    empty_data = pd.DataFrame()
-    start_date = "1800-01-01"
-    end_date = "1800-05-01"
-    interval = "1d"
+@pytest.mark.parametrize("data", [[], {}, "string", 123, None])
+def test_validate_data_type_dataframe_invalid(data):
+    """Test _validate_data_type_dataframe with invalid inputs."""
+    with pytest.raises(TypeError):
+        _validate_data_type_dataframe(data)
+
+
+# Test for _validate_data_empty
+@pytest.mark.parametrize(
+    "data",
+    [
+        pd.DataFrame({"Close": [100, 101], "Open": [99, 100]}),
+        pd.DataFrame({"A": [1], "B": [2]}),
+    ],
+)
+def test_validate_data_empty_valid(data):
+    """Test _validate_data_empty with non-empty DataFrames."""
+    _validate_data_empty(data, "AAPL", "2022-01-01", "2022-12-31", "1d")
+
+
+@pytest.mark.parametrize(
+    "data", [pd.DataFrame({"Close": [], "Open": []}), pd.DataFrame()]
+)
+def test_validate_data_empty_invalid(data):
+    """Test _validate_data_empty with empty DataFrames."""
     match = (
-        f"No data found for {symbol} between {start_date} and {end_date} "
-        f"with interval '{interval}'."
+        "No data found for AAPL between 2022-01-01 and 2022-12-31 with interval '1d'."
     )
     with pytest.raises(ValueError, match=match):
-        _validate_output(empty_data, symbol, "1800-01-01", "1800-05-01", "1d")
+        _validate_data_empty(data, "AAPL", "2022-01-01", "2022-12-31", "1d")
+
+
+# Test for _validate_data_index_datetime
+@pytest.mark.parametrize(
+    "index",
+    [
+        pd.DatetimeIndex(["2022-01-01", "2022-01-02"]),
+        pd.DatetimeIndex(pd.date_range("2022-01-01", periods=3)),
+    ],
+)
+def test_validate_data_index_datetime_valid(index):
+    """Test _validate_data_index_datetime with valid DatetimeIndex."""
+    _validate_data_index_datetime(index)
+
+
+@pytest.mark.parametrize(
+    "index",
+    [
+        pd.Index([1, 2, 3]),
+        pd.Index(["a", "b", "c"]),
+        pd.RangeIndex(0, 5),
+        [1, 2, 3],
+        None,
+    ],
+)
+def test_validate_data_index_datetime_invalid(index):
+    """Test _validate_data_index_datetime with invalid indexes."""
+    with pytest.raises(TypeError):
+        _validate_data_index_datetime(index)
+
+
+# Test for _validate_data_multiindex
+def test_validate_data_multiindex_valid():
+    """Test _validate_data_multiindex with valid MultiIndex."""
+    # Define input: Valid MultiIndex DataFrame with fixed, smaller values
+    arrays = [["Close", "Open", "High", "Low"], ["AAPL", "AAPL", "AAPL", "AAPL"]]
+    index = pd.MultiIndex.from_arrays(arrays, names=["Type", "Ticker"])
+
+    # Smaller fixed dataset
+    data = [[100, 99, 101, 98], [101, 100, 102, 99], [102, 101, 103, 100]]
+
+    df = pd.DataFrame(data, columns=index)
+
+    # Perform test
+    _validate_data_multiindex(df.columns)
+
+
+# Test for _validate_data_numeric
+@pytest.mark.parametrize(
+    "data",
+    [
+        pd.DataFrame(
+            {
+                "Close": [100.0, 101.0],
+                "Open": [99.0, 100.0],
+                "High": [101.0, 102.0],
+                "Low": [98.0, 99.0],
+            }
+        ),
+        pd.DataFrame(
+            {"Close": [1, 2, 3], "Open": [4, 5, 6], "High": [7, 8, 9], "Low": [0, 1, 2]}
+        ),
+    ],
+)
+def test_validate_data_numeric_valid(data):
+    """Test _validate_data_numeric with numeric columns."""
+    _validate_data_numeric(data)
+
+
+@pytest.mark.parametrize(
+    ("data", "expected_error"),
+    [
+        (
+            pd.DataFrame(
+                {
+                    "Close": ["100", "101"],
+                    "Open": [99, 100],
+                    "High": [101.0, 102.0],
+                    "Low": [98.0, 99.0],
+                }
+            ),
+            "The following columns must contain numeric values: Close.",
+        ),
+        (
+            pd.DataFrame(
+                {
+                    "Close": [100, 101],
+                    "Open": ["99", "100"],
+                    "High": [101, 102],
+                    "Low": [98, 99],
+                }
+            ),
+            "The following columns must contain numeric values: Open.",
+        ),
+        (
+            pd.DataFrame(
+                {
+                    "Close": [100, 101],
+                    "Open": [99, 100],
+                    "High": [101, 102],
+                    "Low": ["98", "99"],
+                }
+            ),
+            "The following columns must contain numeric values: Low.",
+        ),
+    ],
+)
+def test_validate_data_numeric_invalid(data, expected_error):
+    """Test _validate_data_numeric with non-numeric columns."""
+    with pytest.raises(ValueError, match=expected_error):
+        _validate_data_numeric(data)

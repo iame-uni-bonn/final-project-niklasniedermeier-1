@@ -8,8 +8,8 @@ from backtest_bay.backtest.backtest_signals import (
     _is_buy_trade_affordable,
     _is_sell_trade_affordable,
     _update_portfolio,
-    _validate_data,
     _validate_initial_cash,
+    _validate_price_col,
     _validate_tac,
     _validate_trade_pct,
     backtest_signals,
@@ -151,67 +151,6 @@ def test_update_portfolio_correct_calculation():
     assert holdings == expected_holdings
 
 
-# Tests for _validate_data
-@pytest.mark.parametrize(
-    ("data", "price_col"),
-    [
-        (pd.DataFrame({"Close": [100, 101, 102]}), "Close"),
-        (pd.DataFrame({"Open": [99, 100, 101], "Close": [100, 101, 102]}), "Close"),
-        (pd.DataFrame({"Close": [100.5, 101.2, 102.1, 103.8]}), "Close"),
-    ],
-)
-def test_validate_data_valid_input(data, price_col):
-    """Test valid data input for _validate_data."""
-    _validate_data(data, price_col)
-
-
-@pytest.mark.parametrize(
-    ("data", "price_col", "expected_error"),
-    [
-        ([100, 101], "Close", "data must be a pandas DataFrame, got list."),
-        ({"Close": [100, 101]}, "Close", "data must be a pandas DataFrame, got dict."),
-    ],
-)
-def test_validate_data_invalid_type(data, price_col, expected_error):
-    """Test invalid data types for _validate_data."""
-    with pytest.raises(TypeError, match=expected_error):
-        _validate_data(data, price_col)
-
-
-@pytest.mark.parametrize(
-    ("data", "price_col", "expected_error"),
-    [
-        (pd.DataFrame({"Open": [100]}), "Close", "data must contain a 'Close' column."),
-        (pd.DataFrame({"Close": [100]}), "Open", "data must contain a 'Open' column."),
-    ],
-)
-def test_validate_data_missing_price_column(data, price_col, expected_error):
-    """Test missing price column for _validate_data."""
-    with pytest.raises(ValueError, match=expected_error):
-        _validate_data(data, price_col)
-
-
-@pytest.mark.parametrize(
-    ("data", "price_col", "expected_error"),
-    [
-        (
-            pd.DataFrame({"Close": ["100", 100]}),
-            "Close",
-            "The 'Close' column must contain numeric values.",
-        ),
-        (
-            pd.DataFrame({"Close": ["a", "b", "c", "d"]}),
-            "Close",
-            "The 'Close' column must contain numeric values.",
-        ),
-    ],
-)
-def test_validate_data_non_numeric_price_column(data, price_col, expected_error):
-    """Test non-numeric price column for _validate_data."""
-    with pytest.raises(ValueError, match=expected_error):
-        _validate_data(data, price_col)
-
-
 # Tests for _validate_initial_cash
 @pytest.mark.parametrize("initial_cash", [1000, 1000.50, 0.01])
 def test_validate_initial_cash_valid_input(initial_cash):
@@ -272,3 +211,17 @@ def test_validate_trade_pct_invalid_input(trade_pct, expected_error):
     """Test invalid trade_pct values."""
     with pytest.raises((TypeError, ValueError), match=expected_error):
         _validate_trade_pct(trade_pct)
+
+
+# Tests for _validate_price_col
+@pytest.mark.parametrize(
+    ("data", "price_col"),
+    [
+        (pd.DataFrame({"Close": [100, 101, 102]}), "Close"),
+        (pd.DataFrame({"Open": [99, 100, 101], "Close": [100, 101, 102]}), "Close"),
+        (pd.DataFrame({"Close": [100.5, 101.2, 102.1, 103.8]}), "Close"),
+    ],
+)
+def test_validate_data_valid_input(data, price_col):
+    """Test valid data input for _validate_data."""
+    _validate_price_col(data, price_col)

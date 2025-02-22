@@ -55,5 +55,4 @@ def _merge_stock_data_with_portfolio(data, portfolio):
     Returns:
         pd.DataFrame: Merged DataFrame.
     """
-    data.columns = data.columns.droplevel(1)
     return data.merge(portfolio, how="left", left_index=True, right_index=True)

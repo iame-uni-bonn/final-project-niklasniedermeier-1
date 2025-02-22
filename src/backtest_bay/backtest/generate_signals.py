@@ -29,7 +29,7 @@ def generate_signals(data, method, **kwargs):
         pd.Series: Trading signals (2: buy, 1: sell, 0: do nothing).
     """
     _validate_input_method(method)
-    closing_prices = data["Close"].squeeze()
+    closing_prices = data["Close"]
 
     if method == "bollinger":
         signal = _bollinger_signals(prices=closing_prices, **kwargs)
