@@ -60,9 +60,9 @@ def _calculate_years(stock):
     return years
 
 
-def _calculate_trades(stock):
+def _calculate_trades(shares):
     """Calculate the number of trades by counting changes in the shares held."""
-    trades = stock.diff().ne(0).sum()
+    trades = shares.diff().ne(0).sum()
     return trades
 
 
