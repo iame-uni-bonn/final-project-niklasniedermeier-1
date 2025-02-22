@@ -17,8 +17,8 @@ END_DATES = ["2025-01-01"]
 INTERVALS = ["1d"]
 STRATEGIES = ["bollinger", "macd", "roc", "rsi"]
 
-INITIAL_CASH = 1000
-TAC = 0.05
+INITIAL_CASH = 1000000
+TAC = 0.005
 TRADE_PCT = 0.05
 
 # Define PARAMS using input data
