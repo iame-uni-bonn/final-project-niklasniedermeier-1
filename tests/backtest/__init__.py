@@ -1,1 +1,1 @@
-"""Tests for the analysis module."""
+"""Tests for the backtest module."""

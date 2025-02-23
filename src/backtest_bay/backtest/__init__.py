@@ -1,1 +1,1 @@
-"""Code for the core analyses."""
+"""Code for the backtest module."""
