@@ -19,13 +19,12 @@ dependencies:
   - pytest-cov
   - pytest-xdist
 
-  # Python template project dependencies
+  # Python project dependencies
   - statsmodels
   - numpy
   - pandas >=2.2
   - plotly >=5.2.0,<6
-
-  # Data dependencies
+  - pyarrow>=10.0.1
   - yfinance >=0.2.54
 
   # Install project

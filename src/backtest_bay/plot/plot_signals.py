@@ -1,5 +1,10 @@
+import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+
+pd.options.mode.copy_on_write = True
+pd.options.future.infer_string = True
+pd.options.plotting.backend = "plotly"
 
 
 def plot_signals(df, title):
