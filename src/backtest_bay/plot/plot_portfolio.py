@@ -36,40 +36,6 @@ def plot_portfolio(portfolio, title, tac):
     return fig
 
 
-def _calculate_portfolio_return(stock):
-    """Calculate the total return of the stock."""
-    initial_value = stock.iloc[0]
-    final_value = stock.iloc[-1]
-    total_return = (final_value / initial_value) - 1
-    portfolio_return = total_return * 100
-    return portfolio_return
-
-
-def _calculate_annualized_return(stock):
-    """Calculate the annualized return for a stock."""
-    initial_value = stock.iloc[0]
-    final_value = stock.iloc[-1]
-    total_return = (final_value / initial_value) - 1
-
-    years = _calculate_years(stock)
-    annualized_return = ((1 + total_return) ** (1 / years) - 1) * 100
-
-    return annualized_return
-
-
-def _calculate_years(stock):
-    """Calculate the number of years between the first and last date of a stock."""
-    total_seconds = (stock.index[-1] - stock.index[0]).total_seconds()
-    years = total_seconds / pd.Timedelta(days=365).total_seconds()
-    return years
-
-
-def _calculate_trades(shares):
-    """Calculate the number of trades by counting changes in the shares held."""
-    trades = shares.diff().ne(0).sum()
-    return trades
-
-
 def _create_portfolio_traces(portfolio):
     """Create Plotly traces for cash and assets over time."""
     traces = [
@@ -127,3 +93,41 @@ def _create_plot_layout(title):
         "template": "plotly",
     }
     return layout
+
+
+def _calculate_portfolio_return(stock):
+    """Calculate the total return of the stock."""
+    initial_value = stock.iloc[0]
+    final_value = stock.iloc[-1]
+
+    if initial_value == 0:
+        return float("nan")
+
+    total_return = (final_value / initial_value) - 1
+    portfolio_return = total_return * 100
+    return portfolio_return
+
+
+def _calculate_annualized_return(stock):
+    """Calculate the annualized return for a stock."""
+    total_return = _calculate_portfolio_return(stock) / 100
+    years = _calculate_years(stock.index)
+
+    if years == 0:
+        return 0
+
+    annualized_return = ((1 + total_return) ** (1 / years) - 1) * 100
+    return annualized_return
+
+
+def _calculate_years(stock_index):
+    """Calculate the number of years between the first and last date of a stock."""
+    total_seconds = (stock_index[-1] - stock_index[0]).total_seconds()
+    years = total_seconds / pd.Timedelta(days=365).total_seconds()
+    return years
+
+
+def _calculate_trades(shares):
+    """Calculate the number of trades by counting changes in the shares held."""
+    trades = shares.diff().fillna(0).ne(0).sum()
+    return trades
