@@ -11,19 +11,31 @@ pd.options.plotting.backend = "plotly"
 
 
 def plot_portfolio(portfolio, title, tac, cash):
-    """Main function to plot the portfolio performance and metrics."""
+    """Plots the portfolio performance and associated financial metrics.
+
+    Args:
+        portfolio (pd.DataFrame): A DataFrame containing the portfolio's assets, shares,
+            and prices.
+        title (str): Title of the plot.
+        tac (float): Transaction costs.
+        cash (float): Initial cash.
+
+    Returns:
+        (go.Figure) Figure with portfolio performance and metrics.
+    """
+    # Note that there is no need to validate the inputs 'portfolio', 'tac' and 'cash',
+    # since they are already checked in 'download_data.py' and 'backtest_signals.py".
     portfolio_return = _calculate_portfolio_return(portfolio["assets"])
     annualized_return = _calculate_annualized_return(portfolio["assets"])
     annualized_volatility = _calculate_annualized_volatility(portfolio["assets"])
+    trades = _calculate_trades(portfolio["shares"])
 
-    # Benchmark: Buy and Hold Strategy
     portfolio["buy_and_hold"] = _buy_and_hold_strategy(cash, portfolio["Close"])
     buy_and_hold_return = _calculate_annualized_return(portfolio["buy_and_hold"])
     buy_and_hold_volatility = _calculate_annualized_volatility(
         portfolio["buy_and_hold"]
     )
 
-    trades = _calculate_trades(portfolio["shares"])
     fig = make_subplots(
         rows=2,
         cols=1,
@@ -33,7 +45,10 @@ def plot_portfolio(portfolio, title, tac, cash):
         specs=[[{"type": "xy"}], [{"type": "domain"}]],
     )
 
-    for trace in _create_portfolio_traces(portfolio):
+    portfolio_traces = _create_portfolio_traces(
+        portfolio.index, portfolio["cash"], portfolio["assets"]
+    )
+    for trace in portfolio_traces:
         fig.add_trace(trace, row=1, col=1)
 
     metrics_table = _create_metrics_table(
@@ -52,13 +67,13 @@ def plot_portfolio(portfolio, title, tac, cash):
     return fig
 
 
-def _create_portfolio_traces(portfolio):
+def _create_portfolio_traces(index, cash, assets):
     """Create Plotly traces for cash and assets over time."""
     traces = [
-        go.Scatter(x=portfolio.index, y=portfolio["cash"], mode="lines", name="Cash"),
+        go.Scatter(x=index, y=cash, mode="lines", name="Cash"),
         go.Scatter(
-            x=portfolio.index,
-            y=portfolio["assets"],
+            x=index,
+            y=assets,
             mode="lines",
             name="Assets (Cash + Holdings)",
         ),
@@ -160,6 +175,7 @@ def _calculate_trades(shares):
 
 
 def _calculate_annualized_volatility(stock):
+    """Calculates the annualized volatility for a stock."""
     if len(stock) <= 1:
         return 0
 
@@ -176,10 +192,13 @@ def _calculate_annualized_volatility(stock):
 
 
 def _buy_and_hold_strategy(initial_cash, prices):
+    """Calculates the portfolio development using a buy and hold strategy."""
     first_price = prices.iloc[0]
 
     if first_price == 0:
         return 0
 
     shares = np.floor(initial_cash / first_price)
-    return shares * prices
+    not_invested_cash = initial_cash - shares * first_price
+    portfolio_buy_and_hold = shares * prices + not_invested_cash
+    return portfolio_buy_and_hold

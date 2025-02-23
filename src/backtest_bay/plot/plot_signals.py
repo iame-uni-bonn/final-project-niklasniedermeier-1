@@ -9,19 +9,30 @@ pd.options.future.infer_string = True
 pd.options.plotting.backend = "plotly"
 
 
-def plot_signals(df, title):
-    """Create Plotly figure to plot trading signals."""
-    df["signal_plot"] = _map_signals_for_plotting(df["signal"])
+def plot_signals(data, title):
+    """Plots trading signals alongside candlestick charts.
+
+    Args:
+        data (pd.DataFrame): A DataFrame containing stock price data and trading
+            signals. Expected columns: "Open", "High","Low","Close","signal".
+        title (str): The title of the plot.
+
+    Returns:
+        (go.Figure): Figure with trading signals alongside candlestick charts.
+    """
+    # Note that there is no need to validate the input 'data', since 'data' is already
+    # checked in 'download_data.py'.
+    data["signal_plot"] = _map_signals_for_plotting(data["signal"])
 
     fig = make_subplots(
         rows=2, cols=1, shared_xaxes=True, row_heights=[0.7, 0.3], vertical_spacing=0.1
     )
 
     fig.add_trace(
-        _create_candlestick_trace(df[["Open", "High", "Low", "Close"]]), row=1, col=1
+        _create_candlestick_trace(data[["Open", "High", "Low", "Close"]]), row=1, col=1
     )
 
-    buy_trace, sell_trace = _create_signal_traces(df["signal_plot"])
+    buy_trace, sell_trace = _create_signal_traces(data["signal_plot"])
     fig.add_trace(buy_trace, row=2, col=1)
     fig.add_trace(sell_trace, row=2, col=1)
 
@@ -38,7 +49,7 @@ def plot_signals(df, title):
         row=2,
         col=1,
         tickvals=[-1, 0, 1],
-        ticktext=["Sell", "Hold", "Buy"],
+        ticktext=["Sell", "", "Buy"],
     )
 
     return fig
