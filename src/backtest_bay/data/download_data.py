@@ -1,3 +1,5 @@
+"""This script deploys functions to download data."""
+
 from datetime import datetime
 
 import pandas as pd

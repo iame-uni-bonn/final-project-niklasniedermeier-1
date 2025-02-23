@@ -1,3 +1,5 @@
+"""This script deploys functions to backtest trading signals."""
+
 import math
 
 import pandas as pd

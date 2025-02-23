@@ -1,3 +1,5 @@
+"""This script deploys a task to generate trading signals and backtest them."""
+
 import pandas as pd
 import pytask
 
@@ -31,6 +33,7 @@ for row in PARAMS.itertuples(index=False):
         produces=produces,
         strategy=strategy,
     ):
+        """Task to generate signals, backtest and store results it in the bld folder."""
         stock_data = pd.read_pickle(stock_data_path)
         signals = generate_signals(data=stock_data, method=strategy)
         backtested_portfolio = backtest_signals(

@@ -1,3 +1,5 @@
+"""This script deploys a task to plot the backtested portfolio and trading signals."""
+
 import pandas as pd
 import pytask
 
@@ -32,6 +34,7 @@ for row in PARAMS.itertuples(index=False):
         produces=produces,
         id_backtest=id_backtest,
     ):
+        """Task to plot the backtested portfolio and trading signals."""
         portfolio = pd.read_pickle(backtest_path)
         fig = plot_signals(portfolio, id_backtest)
         fig.write_html(produces.get("plot_signals"))

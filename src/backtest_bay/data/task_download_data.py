@@ -1,3 +1,5 @@
+"""This script deploys a task to download data."""
+
 import pytask
 
 from backtest_bay.config import BLD, PARAMS, SRC
@@ -16,6 +18,7 @@ for row in data_to_download.itertuples(index=False):
 
     @pytask.task(id=id_download)
     def task_download_data(depends_on=scripts, produces=produces, param=row):
+        """Task to download data and store it in the bld folder."""
         data = download_data(
             symbol=param.stock,
             start_date=param.start_date,
