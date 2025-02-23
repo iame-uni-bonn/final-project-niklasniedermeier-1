@@ -13,6 +13,7 @@ from backtest_bay.backtest.backtest_signals import (
     _validate_tac,
     _validate_trade_pct,
     backtest_signals,
+    merge_data_with_backtest_portfolio,
 )
 
 
@@ -225,3 +226,29 @@ def test_validate_trade_pct_invalid_input(trade_pct, expected_error):
 def test_validate_data_valid_input(data, price_col):
     """Test valid data input for _validate_data."""
     _validate_price_col(data, price_col)
+
+
+# Tests for merge_data_with_backtest_portfolio
+@pytest.mark.parametrize(
+    ("data", "portfolio", "expected"),
+    [
+        (
+            pd.DataFrame({"price": [10, 6]}, index=["2023-01-01", "2023-01-02"]),
+            pd.DataFrame({"signal": [1, 0]}, index=["2023-01-01", "2023-01-02"]),
+            pd.DataFrame(
+                {"price": [10, 6], "signal": [1, 0]}, index=["2023-01-01", "2023-01-02"]
+            ),
+        ),
+        (
+            pd.DataFrame({"price": [5, 44]}, index=["2023-05-01", "2023-05-08"]),
+            pd.DataFrame({"signal": [1, 1]}, index=["2023-05-01", "2023-05-08"]),
+            pd.DataFrame(
+                {"price": [5, 44], "signal": [1, 1]}, index=["2023-05-01", "2023-05-08"]
+            ),
+        ),
+    ],
+)
+def test_merge_data_with_backtest_portfolio(data, portfolio, expected):
+    "Test correct merge for merge_data_with_backtest_portfolio."
+    result = merge_data_with_backtest_portfolio(data, portfolio)
+    result.equals(expected)

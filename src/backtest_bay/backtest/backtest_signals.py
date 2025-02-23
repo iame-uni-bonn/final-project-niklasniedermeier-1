@@ -236,3 +236,16 @@ def _validate_price_col(data, price_col):
     if price_col not in data.columns:
         error_msg = f"data must contain a '{price_col}' column."
         raise ValueError(error_msg)
+
+
+def merge_data_with_backtest_portfolio(data, portfolio):
+    """Merge downloaded data with backtested portfolio using the index.
+
+    Args:
+        data (pd.DataFrame): DataFrame with downloaded data.
+        portfolio (pd.DataFrame): DataFrame to be merged with data using the index.
+
+    Returns:
+        pd.DataFrame: Merged DataFrame.
+    """
+    return data.merge(portfolio, how="left", left_index=True, right_index=True)

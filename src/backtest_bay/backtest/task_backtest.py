@@ -1,7 +1,10 @@
 import pandas as pd
 import pytask
 
-from backtest_bay.backtest.backtest_signals import backtest_signals
+from backtest_bay.backtest.backtest_signals import (
+    backtest_signals,
+    merge_data_with_backtest_portfolio,
+)
 from backtest_bay.backtest.generate_signals import generate_signals
 from backtest_bay.config import BLD, INITIAL_CASH, PARAMS, SRC, TAC, TRADE_PCT
 
@@ -38,21 +41,8 @@ for row in PARAMS.itertuples(index=False):
             trade_pct=TRADE_PCT,
         )
 
-        merged_portfolio = _merge_stock_data_with_portfolio(
+        merged_portfolio = merge_data_with_backtest_portfolio(
             stock_data, backtested_portfolio
         )
 
         merged_portfolio.to_pickle(produces)
-
-
-def _merge_stock_data_with_portfolio(data, portfolio):
-    """Merge data with portfolio using the index.
-
-    Args:
-        data (pd.DataFrame): DataFrame with downloaded data.
-        portfolio (pd.DataFrame): DataFrame to be merged with data using the index.
-
-    Returns:
-        pd.DataFrame: Merged DataFrame.
-    """
-    return data.merge(portfolio, how="left", left_index=True, right_index=True)
