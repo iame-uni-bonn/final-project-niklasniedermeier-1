@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -7,19 +8,26 @@ pd.options.future.infer_string = True
 pd.options.plotting.backend = "plotly"
 
 
-def plot_portfolio(portfolio, title, tac):
+def plot_portfolio(portfolio, title, tac, cash):
     """Main function to plot the portfolio performance and metrics."""
     portfolio_return = _calculate_portfolio_return(portfolio["assets"])
     annualized_return = _calculate_annualized_return(portfolio["assets"])
-    buy_and_hold_return = _calculate_annualized_return(portfolio["Close"])
-    trades = _calculate_trades(portfolio["shares"])
+    annualized_volatility = _calculate_annualized_volatility(portfolio["assets"])
 
+    # Benchmark: Buy and Hold Strategy
+    portfolio["buy_and_hold"] = _buy_and_hold_strategy(cash, portfolio["Close"])
+    buy_and_hold_return = _calculate_annualized_return(portfolio["buy_and_hold"])
+    buy_and_hold_volatility = _calculate_annualized_volatility(
+        portfolio["buy_and_hold"]
+    )
+
+    trades = _calculate_trades(portfolio["shares"])
     fig = make_subplots(
         rows=2,
         cols=1,
         shared_xaxes=True,
-        row_heights=[0.70, 0.30],
-        vertical_spacing=0.2,
+        row_heights=[0.60, 0.40],
+        vertical_spacing=0.15,
         specs=[[{"type": "xy"}], [{"type": "domain"}]],
     )
 
@@ -27,7 +35,13 @@ def plot_portfolio(portfolio, title, tac):
         fig.add_trace(trace, row=1, col=1)
 
     metrics_table = _create_metrics_table(
-        portfolio_return, annualized_return, trades, buy_and_hold_return, tac
+        portfolio_return,
+        annualized_return,
+        annualized_volatility,
+        trades,
+        buy_and_hold_return,
+        buy_and_hold_volatility,
+        tac,
     )
     fig.add_trace(metrics_table, row=2, col=1)
 
@@ -51,7 +65,13 @@ def _create_portfolio_traces(portfolio):
 
 
 def _create_metrics_table(
-    portfolio_return, annualized_return, trades, buy_and_hold_return, tac
+    portfolio_return,
+    annualized_return,
+    annualized_volatility,
+    trades,
+    buy_and_hold_return,
+    buy_and_hold_volatility,
+    tac,
 ):
     """Create a Plotly table for the portfolio metrics."""
     table = go.Table(
@@ -63,18 +83,22 @@ def _create_metrics_table(
         cells={
             "values": [
                 [
-                    "Total Return",
-                    "Annualized Return",
+                    "Total Strategy Return",
+                    "Annualized Strategy Return",
+                    "Annualized Strategy Volatility",
                     "Trades",
                     "Assumed TAC",
-                    "Benchmark: Annualized Buy and Hold Return",
+                    "Annualized Buy and Hold Return",
+                    "Annualized Buy and Hold Volatility",
                 ],
                 [
                     f"{portfolio_return:.2f}%",
                     f"{annualized_return:.2f}%",
+                    f"{annualized_volatility:.2f}%",
                     trades,
                     f"{tac * 100:.2f}%",
                     f"{buy_and_hold_return:.2f}%",
+                    f"{buy_and_hold_volatility:.2f}%",
                 ],
             ],
             "align": "left",
@@ -131,3 +155,29 @@ def _calculate_trades(shares):
     """Calculate the number of trades by counting changes in the shares held."""
     trades = shares.diff().fillna(0).ne(0).sum()
     return trades
+
+
+def _calculate_annualized_volatility(stock):
+    if len(stock) <= 1:
+        return 0
+
+    daily_log_returns = np.log(stock / stock.shift(1)).dropna()
+    daily_volatility = daily_log_returns.std()
+    years = _calculate_years(stock.index)
+    days_per_year = 365 / years
+
+    if years == 0:
+        return 0
+
+    annualized_volatility = daily_volatility * np.sqrt(days_per_year) * 100
+    return annualized_volatility
+
+
+def _buy_and_hold_strategy(initial_cash, prices):
+    first_price = prices.iloc[0]
+
+    if first_price == 0:
+        return 0
+
+    shares = np.floor(initial_cash / first_price)
+    return shares * prices

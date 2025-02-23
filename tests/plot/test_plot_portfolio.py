@@ -3,7 +3,9 @@ import pandas as pd
 import pytest
 
 from backtest_bay.plot.plot_portfolio import (
+    _buy_and_hold_strategy,
     _calculate_annualized_return,
+    _calculate_annualized_volatility,
     _calculate_portfolio_return,
     _calculate_trades,
     _calculate_years,
@@ -22,7 +24,7 @@ from backtest_bay.plot.plot_portfolio import (
     ],
 )
 def test_calculate_portfolio_return_valid_calculation(stock, expected_return):
-    """Check if calculated return equals expected value."""
+    """Test if _calculate_portfolio_return returns the correct return value."""
     result = _calculate_portfolio_return(stock)
     assert result == expected_return
 
@@ -39,6 +41,7 @@ def test_calculate_portfolio_return_valid_calculation(stock, expected_return):
     ],
 )
 def test_calculate_years(index, expected):
+    """Test if _calculate_years correctly computes the number of years."""
     result = _calculate_years(index)
     assert np.isclose(result, expected, atol=1e-2)
 
@@ -69,6 +72,7 @@ def test_calculate_years(index, expected):
     ],
 )
 def test_calculate_annualized_return(stock, expected):
+    """Test if _calculate_annualized_return correctly calculates annualized returns."""
     result = _calculate_annualized_return(stock)
     assert np.isclose(result, expected, atol=1e-1)
 
@@ -83,5 +87,42 @@ def test_calculate_annualized_return(stock, expected):
     ],
 )
 def test_calculate_trades(shares, expected):
+    """Test if _calculate_trades correctly counts the number of trades."""
     result = _calculate_trades(shares)
     assert result == expected
+
+
+# Tests for _calculate_annualized_volatility
+@pytest.mark.parametrize(
+    ("stock_prices", "expected_volatility"),
+    [
+        ([100, 100, 100, 100, 100], 0),
+        ([100, 101, 102, 103, 104], pytest.approx(2.26, rel=1e-2)),
+        ([100], 0),
+    ],
+)
+def test_calculate_annualized_volatility(stock_prices, expected_volatility):
+    stock = pd.Series(
+        stock_prices, index=pd.date_range(start="2022-01-01", periods=len(stock_prices))
+    )
+    result = _calculate_annualized_volatility(stock)
+    assert result == expected_volatility
+
+
+# Tests for _buy_and_hold_strategy
+@pytest.mark.parametrize(
+    ("initial_cash", "prices", "expected"),
+    [
+        # Standard case with positive prices
+        (100, pd.Series([10, 12, 15, 18]), pd.Series([100.0, 120.0, 150.0, 180.0])),
+        #  Not enough cash to buy even one share
+        (5, pd.Series([10, 12, 15, 18]), pd.Series([0.0, 0.0, 0.0, 0.0])),
+        # Cash exactly enough to buy one share
+        (10, pd.Series([10, 12, 15, 18]), pd.Series([10.0, 12.0, 15.0, 18.0])),
+    ],
+)
+def test_buy_and_hold_strategy(initial_cash, prices, expected):
+    """Test if _calculate_annualized_volatility correctly calculates annualized
+    volatility."""
+    result = _buy_and_hold_strategy(initial_cash, prices)
+    pd.testing.assert_series_equal(result, expected)

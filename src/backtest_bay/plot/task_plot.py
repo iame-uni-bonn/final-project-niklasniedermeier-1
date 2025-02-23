@@ -1,7 +1,7 @@
 import pandas as pd
 import pytask
 
-from backtest_bay.config import BLD, PARAMS, SRC, TAC
+from backtest_bay.config import BLD, INITIAL_CASH, PARAMS, SRC, TAC
 from backtest_bay.plot.plot_portfolio import plot_portfolio
 from backtest_bay.plot.plot_signals import plot_signals
 
@@ -35,5 +35,5 @@ for row in PARAMS.itertuples(index=False):
         portfolio = pd.read_pickle(backtest_path)
         fig = plot_signals(portfolio, id_backtest)
         fig.write_html(produces.get("plot_signals"))
-        fig = plot_portfolio(portfolio, id_backtest, TAC)
+        fig = plot_portfolio(portfolio, id_backtest, TAC, INITIAL_CASH)
         fig.write_html(produces.get("plot_portfolio"))
