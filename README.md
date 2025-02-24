@@ -1,7 +1,8 @@
 # BacktestBay
 
 BacktestBay is a Python-based framework for backtesting trading strategies. It leverages
-[yfinance](https://pypi.org/project/yfinance/) for importing financial data.
+[yfinance](https://pypi.org/project/yfinance/) for importing financial data, which
+requires an active internet connection.
 
 ## Getting Started
 
