@@ -9,9 +9,9 @@ BLD = ROOT.joinpath("bld").resolve()
 
 # Data source
 STOCKS = ["AAPL", "MSFT"]
-START_DATES = "2019-01-01"
-END_DATES = "2025-01-01"
-INTERVALS = "1d"
+START_DATE = "2019-01-01"
+END_DATE = "2025-01-01"
+INTERVAL = "1d"
 
 # Trading strategies
 STRATEGIES = ["bollinger", "macd", "roc", "rsi"]

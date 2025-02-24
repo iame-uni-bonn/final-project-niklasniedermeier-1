@@ -12,11 +12,11 @@ from backtest_bay.backtest.backtest_signals import (
 from backtest_bay.backtest.generate_signals import generate_signals
 from backtest_bay.config import (
     BLD,
-    END_DATES,
+    END_DATE,
     INITIAL_CASH,
-    INTERVALS,
+    INTERVAL,
     SRC,
-    START_DATES,
+    START_DATE,
     STOCKS,
     STRATEGIES,
     TAC,
@@ -30,9 +30,7 @@ scripts = [
 ]
 
 params_to_backtest = pd.DataFrame(
-    list(
-        itertools.product(STOCKS, [START_DATES], [END_DATES], [INTERVALS], STRATEGIES)
-    ),
+    list(itertools.product(STOCKS, [START_DATE], [END_DATE], [INTERVAL], STRATEGIES)),
     columns=["stock", "start_date", "end_date", "interval", "strategy"],
 )
 

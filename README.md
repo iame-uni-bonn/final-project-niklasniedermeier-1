@@ -35,13 +35,13 @@ First, the data source is specified in more detail in the configuration file:
 
 ```python
 STOCKS = ["AAPL", "MSFT"]
-START_DATES = "2019-01-01"
-END_DATES = "2025-01-01"
-INTERVALS = "1d"
+START_DATE = "2019-01-01"
+END_DATE = "2025-01-01"
+INTERVAL = "1d"
 ```
 
 Multiple valid symbols from [yfinance](https://pypi.org/project/yfinance/) can be added
-to the `STOCKS` list. `START_DATES` and `END_DATES` define the time range for the price
+to the `STOCKS` list. `START_DATE` and `END_DATE` define the time range for the price
 history of the selected `STOCKS` at a specified `INTERVAL`. The available options for
 `INTERVAL` are listed at the end of the README file.
 
