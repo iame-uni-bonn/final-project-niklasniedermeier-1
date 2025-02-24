@@ -34,7 +34,7 @@ def backtest_signals(data, signals, initial_cash, tac, trade_pct, price_col="Clo
     # 'download_data.py' and 'generate_signals.py'
     _validate_backtest_signals_input(data, initial_cash, tac, trade_pct, price_col)
 
-    prices = data[price_col].squeeze()
+    prices = data[price_col]
     cash, holdings, shares = initial_cash, 0.0, 0
     assets = cash + holdings
     portfolio = []
