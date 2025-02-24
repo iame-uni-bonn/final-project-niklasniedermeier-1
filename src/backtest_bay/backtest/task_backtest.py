@@ -1,5 +1,7 @@
 """This script deploys a task to generate trading signals and backtest them."""
 
+import itertools
+
 import pandas as pd
 import pytask
 
@@ -8,7 +10,18 @@ from backtest_bay.backtest.backtest_signals import (
     merge_data_with_backtest_portfolio,
 )
 from backtest_bay.backtest.generate_signals import generate_signals
-from backtest_bay.config import BLD, INITIAL_CASH, PARAMS, SRC, TAC, TRADE_PCT
+from backtest_bay.config import (
+    BLD,
+    END_DATES,
+    INITIAL_CASH,
+    INTERVALS,
+    SRC,
+    START_DATES,
+    STOCKS,
+    STRATEGIES,
+    TAC,
+    TRADE_PCT,
+)
 
 scripts = [
     SRC / "config.py",
@@ -16,7 +29,15 @@ scripts = [
     SRC / "backtest" / "backtest_signals.py",
 ]
 
-for row in PARAMS.itertuples(index=False):
+params_to_backtest = pd.DataFrame(
+    list(
+        itertools.product(STOCKS, [START_DATES], [END_DATES], [INTERVALS], STRATEGIES)
+    ),
+    columns=["stock", "start_date", "end_date", "interval", "strategy"],
+)
+
+
+for row in params_to_backtest.itertuples(index=False):
     id_backtest = (
         f"{row.stock}_{row.start_date}_{row.end_date}_" f"{row.interval}_{row.strategy}"
     )

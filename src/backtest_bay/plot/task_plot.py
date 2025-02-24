@@ -1,9 +1,21 @@
 """This script deploys a task to plot the backtested portfolio and trading signals."""
 
+import itertools
+
 import pandas as pd
 import pytask
 
-from backtest_bay.config import BLD, INITIAL_CASH, PARAMS, SRC, TAC
+from backtest_bay.config import (
+    BLD,
+    END_DATES,
+    INITIAL_CASH,
+    INTERVALS,
+    SRC,
+    START_DATES,
+    STOCKS,
+    STRATEGIES,
+    TAC,
+)
 from backtest_bay.plot.plot_portfolio import plot_portfolio
 from backtest_bay.plot.plot_signals import plot_signals
 
@@ -13,7 +25,14 @@ scripts = [
     SRC / "plot" / "plot_portfolio.py",
 ]
 
-for row in PARAMS.itertuples(index=False):
+params_to_plot = pd.DataFrame(
+    list(
+        itertools.product(STOCKS, [START_DATES], [END_DATES], [INTERVALS], STRATEGIES)
+    ),
+    columns=["stock", "start_date", "end_date", "interval", "strategy"],
+)
+
+for row in params_to_plot.itertuples(index=False):
     id_backtest = (
         f"{row.stock}_{row.start_date}_{row.end_date}_{row.interval}_{row.strategy}"
     )

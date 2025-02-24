@@ -1,9 +1,6 @@
 """All the general configuration of the project."""
 
-import itertools
 from pathlib import Path
-
-import pandas as pd
 
 SRC = Path(__file__).parent.resolve()
 ROOT = SRC.joinpath("..", "..").resolve()
@@ -23,11 +20,3 @@ STRATEGIES = ["bollinger", "macd", "roc", "rsi"]
 INITIAL_CASH = 1000000
 TAC = 0.005
 TRADE_PCT = 0.05
-
-# Define PARAMS using input data
-PARAMS = pd.DataFrame(
-    list(
-        itertools.product(STOCKS, [START_DATES], [END_DATES], [INTERVALS], STRATEGIES)
-    ),
-    columns=["stock", "start_date", "end_date", "interval", "strategy"],
-)
