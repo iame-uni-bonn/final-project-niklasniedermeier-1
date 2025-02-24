@@ -1,7 +1,30 @@
-# BacktestBay: Evaluation of Trading Strategies
+# BacktestBay
 
 BacktestBay is a Python-based framework for backtesting trading strategies. It leverages
 [yfinance](https://pypi.org/project/yfinance/) for importing financial data.
+
+## Getting Started
+
+To get started, first clone the repository using the following command:
+
+```bash
+git clone repository-url
+```
+
+Next, create and activate the environment by navigating to the directory containing
+`environment.yml` and running:
+
+```bash
+mamba env create -f environment.yml
+mamba activate backtest_bay
+```
+
+Once the environment is set up, initialize the project by typing the following in the
+project directory:
+
+```bash
+pytask
+```
 
 ## Configuration
 
@@ -48,31 +71,24 @@ TRADE_PCT = 0.05
 
 providing users with greater control and flexibility in their backtesting process.
 `INITIAL_CASH` specifies the amount of cash available at the start. `TAC` specifies the
-transaction costs as a percentage of the traded volume.. `TRADE_PCT` indicates the
+transaction costs as a percentage of the traded volume. `TRADE_PCT` indicates the
 percentage of the current portfolio allocated for trading.
 
-## Getting Started
+The initialization of the project with `pytask` creates a `bld/plot` folder in the
+repository, where two analyses are generated for each stock in `STOCKS`:
 
-To get started, first clone the repository using the following command:
+- **`portfolio`**: Shows the development of the portfolio over time, including
+  performance metrics.
+- **`signals`**: Provides a detailed analysis of the signals in relation to the price
+  trend.
 
-```bash
-git clone repository-url
-```
+## Project Structure
 
-Next, create and activate the environment by navigating to the directory containing
-`environment.yml` and running:
+The project structure in `src/backtest_bay` is as follows:
 
-```bash
-mamba env create -f environment.yml
-mamba activate backtest_bay
-```
-
-Once the environment is set up, initialize the project by typing the following in the
-project directory:
-
-```bash
-pytask
-```
+- **`download_data`**: Contains functions to download `STOCKS`.
+- **`backtest`**: Develops functions to generate trading signals and backtest them.
+- **`plot`**: Plots portfolio performance.
 
 ## yfinance Download Intervals and Maximum History
 
