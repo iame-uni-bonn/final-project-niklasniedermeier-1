@@ -12,9 +12,9 @@ BLD = ROOT.joinpath("bld").resolve()
 
 # Data source
 STOCKS = ["AAPL", "MSFT"]
-START_DATES = ["2019-01-01"]
-END_DATES = ["2025-01-01"]
-INTERVALS = ["1d"]
+START_DATES = "2019-01-01"
+END_DATES = "2025-01-01"
+INTERVALS = "1d"
 
 # Trading strategies
 STRATEGIES = ["bollinger", "macd", "roc", "rsi"]
@@ -26,6 +26,8 @@ TRADE_PCT = 0.05
 
 # Define PARAMS using input data
 PARAMS = pd.DataFrame(
-    list(itertools.product(STOCKS, START_DATES, END_DATES, INTERVALS, STRATEGIES)),
+    list(
+        itertools.product(STOCKS, [START_DATES], [END_DATES], [INTERVALS], STRATEGIES)
+    ),
     columns=["stock", "start_date", "end_date", "interval", "strategy"],
 )
