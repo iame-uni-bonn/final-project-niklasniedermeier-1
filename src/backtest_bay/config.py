@@ -1,4 +1,19 @@
-"""All the general configuration of the project."""
+"""Configuration file for backtesting trading strategies.
+
+Parameters:
+    STOCKS (list of str): List of stock symbols to fetch data for.
+    START_DATE (str): Start date for fetching historical stock data
+        (format: "YYYY-MM-DD").
+    END_DATE (str): End date for fetching historical stock data (format: "YYYY-MM-DD").
+    INTERVAL (str): Time interval for stock data (e.g., "1d", "1wk", "1mo").
+    STRATEGIES (list of str): List of trading strategies to evaluate.
+        Possible values: ["bollinger", "macd", "roc", "rsi"].
+    INITIAL_CASH (int): Initial amount of cash available for trading.
+    TAC (float): Transaction cost per trade, represented as a fraction
+        (e.g., 0.005 for 0.5%).
+    TRADE_PCT (float): Percentage of available capital to invest per trade
+        (e.g., 0.05 for 5%).
+"""
 
 from pathlib import Path
 
